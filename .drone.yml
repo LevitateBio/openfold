@@ -1,0 +1,36 @@
+---
+
+name: default
+kind: pipeline
+type: kubernetes
+node_selector:
+  CPUs: 8
+
+steps:
+
+  - name: get version -- branch
+    image: ubuntu:latest
+    commands:
+      - echo $(cat VERSION)-openfold-$(cat openfold/version.py | grep version | grep -oP "\d+\.\d+\.\d+")-$(echo $DRONE_COMMIT_BRANCH | sed 's/[/_-]//g')-$DRONE_BUILD_NUMBER > .tags
+      - echo $(cat .tags)
+    when:
+      event:
+        - push
+
+  - name: get version -- tag
+    image: ubuntu:latest
+    commands:
+      - echo $(cat VERSION)-openfold-$(cat openfold/version.py | grep version | grep -oP "\d+\.\d+\.\d+") > .tags
+      - echo $(cat .tags)
+    when:
+      event:
+        - tag
+
+  - name: release server image
+    image: plugins/gcr
+    settings:
+      repo: cyrus-containers/openfold
+      debug: true
+      dockerfile: docker/Dockerfile
+      json_key:
+        from_secret: dockerconfigjson
