@@ -31,6 +31,6 @@ steps:
     settings:
       repo: cyrus-containers/openfold
       debug: true
-      dockerfile: docker/Dockerfile
+      dockerfile: Dockerfile
       json_key:
         from_secret: dockerconfigjson
